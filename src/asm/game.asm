@@ -21,17 +21,20 @@
 # 1. Fail Condition w/ Game Over Screen (1pt)
 # 2. Moving Objects (enemies) (2 pts)
 # 3. Moving Platforms (2 pts)
-# 4. Jetpack w/ parabolic motion and animated fire (2 pts)
-# 5. Animated sprites (enemies) (2 pts)
+# 4. Jetpack w/ parabolic motion (2 pts)
+# 5. Animated sprites (enemies, player jetpack) (2 pts)
 #
 # Link to video demonstration for final submission:
-# - (insert YouTube / MyMedia / other URL here). Make sure we can view it!
+# - https://youtu.be/uwmmsh78KPE
 #
 # Are you OK with us sharing the video with people outside course staff?
 # - yes, and please share this project github link as well!
+# https://github.com/SananR/IronRunner/
 #
 # Any additional information that the TA needs to know:
-# - (write here, if any)
+# - Will severely lag Mars due to being over 26k lines of code :(
+# - If anything goes wrong, or my video doesn't work or anything like that
+# - you can contact me 4039669126, or raosanan@gmail.com 
 #
 #####################################################################
 
@@ -72,6 +75,7 @@
 	platform0: .word 130, 40, -1 # X, Y, velX
 	platform1: .word 130, 80, -2 # X, Y, velX
 	rocket0: .word 130, 100, -3
+	rocket0_fire: .word 1, -50, 0, 0, 0  # active, X, Y, frame, ticks 
 	gameover: .word 0
 
 	# Graphics Buffers
@@ -174,6 +178,8 @@ main:
 		
 		# JETPACK ANIMATION
 		jal handleJetpackAnimation
+		# ROCKET0 ANIMATION
+		jal handleRocket0Animation
 		
 		
 		# Draw platforms
@@ -204,6 +210,13 @@ main:
 		lw $a1, 8($t0) # get Y
 		lw $a2, 12($t0) # get Y
 		jal paintJetpackFire
+		
+		# Draw Rocket0 Fire
+		la $t0, rocket0_fire
+		lw $a0, 4($t0) # get X
+		lw $a1, 8($t0) # get Y
+		lw $a2, 12($t0) # get Y
+		jal paintRocket0Fire
 
 		# CLEAR PLAYER OLD PIXELS
 		lw $a1, 0($sp)
@@ -236,6 +249,7 @@ main:
 		addi $sp, $sp, 4
 		li $a2, ROCKET_WIDTH
 		li $a3, ROCKET_HEIGHT
+		add $a2, $a2, 5
 		jal clearArea
 
 		# CLEAR THE PAINT BUFFER
@@ -253,6 +267,52 @@ main:
 ##############
 # ANIMATIONS #
 ##############
+handleRocket0Animation:
+	#save ra
+	move $t8, $ra
+	
+	la $t0, rocket0_fire
+	lw $t1, 0($t0) # get active
+	
+	beq $t1, $zero, ROCKET0FIRENOTACTIVE 
+	
+	# Set x and y to rocket0
+	la $t2, rocket0
+	lw $t3, 0($t2)
+	add $t3, $t3, 5
+	sw $t3, 4($t0)
+	lw $t3, 4($t2)
+	sw $t3, 8($t0)
+	
+	lw $t4, 12($t0) # get frame
+	lw $t5, 16($t0) # get ticks
+	
+	add $t5, $t5, 1
+	bge $t5, 1, ROCKET0FIRELOOP
+	sw $t5, 16($t0)
+	j ROCKET0FIREAFTER
+	
+	ROCKET0FIRELOOP:
+	li $t3, 1
+	slt $t2, $t4, $t3
+	sw $t2, 12($t0)
+	sw $zero, 16($t0)
+	j ROCKET0FIREAFTER
+	
+	ROCKET0FIRENOTACTIVE:
+	
+	li $t2, -50
+	sw $t2, 4($t0)
+	sw $t2, 8($t0)
+	sw $zero, 12($t0)
+	sw $zero, 16($t0)
+	
+	
+	ROCKET0FIREAFTER:
+	
+	move $ra, $t8
+	jr $ra
+	
 handleJetpackAnimation:
 	#save ra
 	move $t8, $ra
@@ -17757,7 +17817,347 @@ jal paintPixel
 	move $ra, $t5
 	jr $ra
 
+paintRocket0Fire:
+	# x in $a0
+	# y in $a1
+	# frame in $a2
 
+	#store x, y, frame and $ra
+	move $t6, $a0
+	move $t7, $a1
+	move $t8, $a2
+	move $t5, $ra
+	
+	beq $t8, 0, ROCKETFIREFRAME0
+	
+add $a0, $t6, 18
+add $a1, $t7, 2
+li $a2, 0xb21c1c
+jal paintPixel
+
+add $a0, $t6, 20
+add $a1, $t7, 2
+li $a2, 0xff2929
+jal paintPixel
+
+add $a0, $t6, 14
+add $a1, $t7, 3
+li $a2, 0xb21c1c
+jal paintPixel
+
+add $a0, $t6, 15
+add $a1, $t7, 3
+li $a2, 0xff2929
+jal paintPixel
+
+add $a0, $t6, 16
+add $a1, $t7, 3
+li $a2, 0xff2929
+jal paintPixel
+
+add $a0, $t6, 17
+add $a1, $t7, 3
+li $a2, 0xff2929
+jal paintPixel
+
+add $a0, $t6, 19
+add $a1, $t7, 3
+li $a2, 0xff2929
+jal paintPixel
+
+add $a0, $t6, 14
+add $a1, $t7, 4
+li $a2, 0xb25a11
+jal paintPixel
+
+add $a0, $t6, 15
+add $a1, $t7, 4
+li $a2, 0xb25a11
+jal paintPixel
+
+add $a0, $t6, 16
+add $a1, $t7, 4
+li $a2, 0xff8119
+jal paintPixel
+
+add $a0, $t6, 17
+add $a1, $t7, 4
+li $a2, 0xff2929
+jal paintPixel
+
+add $a0, $t6, 18
+add $a1, $t7, 4
+li $a2, 0xff2929
+jal paintPixel
+
+add $a0, $t6, 19
+add $a1, $t7, 4
+li $a2, 0xff2929
+jal paintPixel
+
+add $a0, $t6, 15
+add $a1, $t7, 5
+li $a2, 0xb25a11
+jal paintPixel
+
+add $a0, $t6, 16
+add $a1, $t7, 5
+li $a2, 0xff8119
+jal paintPixel
+
+add $a0, $t6, 17
+add $a1, $t7, 5
+li $a2, 0xff8119
+jal paintPixel
+
+add $a0, $t6, 18
+add $a1, $t7, 5
+li $a2, 0xff2929
+jal paintPixel
+
+add $a0, $t6, 19
+add $a1, $t7, 5
+li $a2, 0xb21c1c
+jal paintPixel
+
+add $a0, $t6, 20
+add $a1, $t7, 5
+li $a2, 0xb21c1c
+jal paintPixel
+
+add $a0, $t6, 17
+add $a1, $t7, 6
+li $a2, 0xff2929
+jal paintPixel
+
+add $a0, $t6, 18
+add $a1, $t7, 6
+li $a2, 0xff2929
+jal paintPixel
+
+add $a0, $t6, 19
+add $a1, $t7, 6
+li $a2, 0xff2929
+jal paintPixel
+
+add $a0, $t6, 18
+add $a1, $t7, 7
+li $a2, 0xff2929
+jal paintPixel
+	
+	j AFTERPAINTROCKETFIRE
+	
+	ROCKETFIREFRAME0:
+	
+	add $a0, $t6, 18
+add $a1, $t7, 0
+li $a2, 0xb21c1c
+jal paintPixel
+
+add $a0, $t6, 19
+add $a1, $t7, 0
+li $a2, 0xb21c1c
+jal paintPixel
+
+add $a0, $t6, 16
+add $a1, $t7, 1
+li $a2, 0xff2929
+jal paintPixel
+
+add $a0, $t6, 18
+add $a1, $t7, 1
+li $a2, 0xb21c1c
+jal paintPixel
+
+add $a0, $t6, 14
+add $a1, $t7, 2
+li $a2, 0xff2929
+jal paintPixel
+
+add $a0, $t6, 17
+add $a1, $t7, 2
+li $a2, 0xff2929
+jal paintPixel
+
+add $a0, $t6, 18
+add $a1, $t7, 2
+li $a2, 0xff2929
+jal paintPixel
+
+add $a0, $t6, 19
+add $a1, $t7, 2
+li $a2, 0xb21c1c
+jal paintPixel
+
+add $a0, $t6, 20
+add $a1, $t7, 2
+li $a2, 0xb21c1c
+jal paintPixel
+
+add $a0, $t6, 14
+add $a1, $t7, 3
+li $a2, 0xb21c1c
+jal paintPixel
+
+add $a0, $t6, 15
+add $a1, $t7, 3
+li $a2, 0xb21c1c
+jal paintPixel
+
+add $a0, $t6, 16
+add $a1, $t7, 3
+li $a2, 0xb21c1c
+jal paintPixel
+
+add $a0, $t6, 17
+add $a1, $t7, 3
+li $a2, 0xb21c1c
+jal paintPixel
+
+add $a0, $t6, 18
+add $a1, $t7, 3
+li $a2, 0xff2929
+jal paintPixel
+
+add $a0, $t6, 14
+add $a1, $t7, 4
+li $a2, 0xb25a11
+jal paintPixel
+
+add $a0, $t6, 15
+add $a1, $t7, 4
+li $a2, 0xb25a11
+jal paintPixel
+
+add $a0, $t6, 16
+add $a1, $t7, 4
+li $a2, 0xff8119
+jal paintPixel
+
+add $a0, $t6, 17
+add $a1, $t7, 4
+li $a2, 0xff8119
+jal paintPixel
+
+add $a0, $t6, 18
+add $a1, $t7, 4
+li $a2, 0xff2929
+jal paintPixel
+
+add $a0, $t6, 19
+add $a1, $t7, 4
+li $a2, 0xff2929
+jal paintPixel
+
+add $a0, $t6, 14
+add $a1, $t7, 5
+li $a2, 0xb25a11
+jal paintPixel
+
+add $a0, $t6, 15
+add $a1, $t7, 5
+li $a2, 0xb25a11
+jal paintPixel
+
+add $a0, $t6, 16
+add $a1, $t7, 5
+li $a2, 0xff8119
+jal paintPixel
+
+add $a0, $t6, 17
+add $a1, $t7, 5
+li $a2, 0xff8119
+jal paintPixel
+
+add $a0, $t6, 18
+add $a1, $t7, 5
+li $a2, 0x7c3e0b
+jal paintPixel
+
+add $a0, $t6, 19
+add $a1, $t7, 5
+li $a2, 0xff2929
+jal paintPixel
+
+add $a0, $t6, 20
+add $a1, $t7, 5
+li $a2, 0xb21c1c
+jal paintPixel
+
+add $a0, $t6, 14
+add $a1, $t7, 6
+li $a2, 0xff2929
+jal paintPixel
+
+add $a0, $t6, 15
+add $a1, $t7, 6
+li $a2, 0xb25a11
+jal paintPixel
+
+add $a0, $t6, 16
+add $a1, $t7, 6
+li $a2, 0xff2929
+jal paintPixel
+
+add $a0, $t6, 17
+add $a1, $t7, 6
+li $a2, 0xff2929
+jal paintPixel
+
+add $a0, $t6, 18
+add $a1, $t7, 6
+li $a2, 0xb25a11
+jal paintPixel
+
+add $a0, $t6, 14
+add $a1, $t7, 7
+li $a2, 0xff2929
+jal paintPixel
+
+add $a0, $t6, 15
+add $a1, $t7, 7
+li $a2, 0xb21c1c
+jal paintPixel
+
+add $a0, $t6, 16
+add $a1, $t7, 7
+li $a2, 0xb21c1c
+jal paintPixel
+
+add $a0, $t6, 18
+add $a1, $t7, 7
+li $a2, 0xff2929
+jal paintPixel
+
+add $a0, $t6, 19
+add $a1, $t7, 7
+li $a2, 0xff2929
+jal paintPixel
+
+add $a0, $t6, 20
+add $a1, $t7, 7
+li $a2, 0xb21c1c
+jal paintPixel
+
+add $a0, $t6, 16
+add $a1, $t7, 8
+li $a2, 0xff2929
+jal paintPixel
+
+add $a0, $t6, 20
+add $a1, $t7, 8
+li $a2, 0xb21c1c
+jal paintPixel
+
+add $a0, $t6, 17
+add $a1, $t7, 9
+li $a2, 0xb21c1c
+jal paintPixel
+	
+	AFTERPAINTROCKETFIRE:
+	move $ra, $t5
+	jr $ra
+	
 
 paintJetpackFire:
 	# x in $a0
