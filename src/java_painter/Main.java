@@ -1,3 +1,5 @@
+package java_painter;
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -7,7 +9,7 @@ public class Main {
 
     public static void main(String[] args) {
         try {
-            File img = new File("./src/gameover.png");
+            File img = new File("./src/java_painter/rocketfire1.png");
             BufferedImage image = ImageIO.read(img);
             int[][] data = convertTo2DUsingGetRGB(image);
 
